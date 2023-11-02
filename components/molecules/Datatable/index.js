@@ -32,7 +32,7 @@ const Datatable = ({ data, columns, config }) => {
               <tr key={item.id}>
                 {columns.map((column) => (
                   <td key={column.key}>
-                    {item[column.key] || (column.render && column.render())}
+                    {item[column.key] || (column.render && column.render(item))}
                   </td>
                 ))}
               </tr>

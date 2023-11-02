@@ -2,11 +2,20 @@ import Button from "../../components/atoms/Button";
 import Input from "../../components/atoms/Input";
 import Text from "../../components/atoms/Text";
 import Datatable from "../../components/molecules/Datatable";
+import Modal from "../../components/molecules/Modal";
 import ProductService from "../../domain/products/services";
 import { parseParams } from "../../helper/params";
-import Router from "next/router";
 
 export default class extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      productList: props.productList || [],
+      selectedProduct: null,
+      viewMode: "",
+    };
+  }
+
   static async getInitialProps({ req }) {
     const params = parseParams(req);
 
@@ -15,6 +24,31 @@ export default class extends React.Component {
 
     return { productList: data || [], params };
   }
+
+  handleViewProduct = (product) => {
+    this.setState({
+      selectedProduct: product,
+      viewMode: "view",
+    });
+  };
+
+  handleAddProduct = () => {
+    this.setState({
+      selectedProduct: {
+        product_name: "",
+        product_status: "",
+      },
+      viewMode: "add",
+    });
+  };
+
+  handleCloseModal = () => {
+    this.setState({
+      selectedProduct: null,
+    });
+  };
+
+  handleOnSubmit = (product) => {};
 
   render() {
     const tableColumns = [
@@ -30,10 +64,10 @@ export default class extends React.Component {
       {
         label: "Action",
         key: "action",
-        render: () => (
+        render: (data) => (
           <div>
-            <Button label="View" />
-            <Button label="Edit" />
+            <Button label="View" onClick={() => this.handleViewProduct(data)} />
+            <Button label="Edit" onClick={() => this.handleViewProduct(data)} />
             <Button label="Delete" />
           </div>
         ),
@@ -66,14 +100,43 @@ export default class extends React.Component {
         </div>
         <div>
           <Input type="text" placeholder="Search Product..." />
-          <Button label="Add New Product" />
+          <Button label="Add New Product" onClick={this.handleAddProduct} />
         </div>
         <Datatable
-          data={this.props.productList ? this.props.productList : []}
+          data={this.state.productList ? this.state.productList : []}
           columns={tableColumns}
           config={dataTableConfig}
         />
-        {/* <pre>{JSON.stringify(productList, null, 4)}</pre> */}
+
+        {this.state.selectedProduct && (
+          <Modal
+            isOpen={!!this.state.selectedProduct}
+            onClose={this.handleCloseModal}
+          >
+            <h2>Detail Product</h2>
+            <div>
+              <div>
+                <Text>Product Name</Text>
+                <Input
+                  type="text"
+                  value={this.state.selectedProduct.product_name}
+                />
+              </div>
+              <div>
+                <Text>Status</Text>
+                <Input type="text" value={"Active"} />
+              </div>
+            </div>
+            <br />
+            <div>
+              <Button label="Cancel" onClick={this.handleCloseModal} />
+              <Button
+                label={this.state.viewMode === "add" ? "Add" : "Update"}
+                onClick={this.handleOnSubmit}
+              />
+            </div>
+          </Modal>
+        )}
       </div>
     );
   }
