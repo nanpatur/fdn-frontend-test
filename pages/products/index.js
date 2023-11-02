@@ -20,9 +20,18 @@ export default class extends React.Component {
     const params = parseParams(req);
 
     const productService = new ProductService();
-    const { data } = await productService.getProducts(params);
+    try {
+      const { data } = await productService.getProducts(params);
+      return { productList: data || [], params };
+    } catch (error) {
+      return { productList: [], params, error };
+    }
+  }
 
-    return { productList: data || [], params };
+  componentDidMount() {
+    if (this.props.error) {
+      alert(this.props.error.message);
+    }
   }
 
   handleViewProduct = (product) => {
